@@ -78,7 +78,58 @@ return res.status(201).json({ user })
 
   },
 
-  async login(){
+  async login(req, res, next){
+    // user data - check/ validate
+    // midleware - error
+    // if validate - username and password compare
+    //if not matched -- error
+    // if match successfully - response // 200
+
+    const userLoginSchema = Joi.object({
+        username: Joi.string().min(5).max(25).required(),
+        password: Joi.string().pattern(passPattern).required()
+    })
+
+    const {error} = userLoginSchema.validate(req.body);
+
+    if(error){
+        return next(error)
+    }
+
+    // if above block does not run, match username
+    const {username, password} =req.body;
+
+    // const username = req.body.username
+        let user;
+    try{
+        user = await User.findOne({username: username});
+
+        if(!user){
+            const error = {
+                status: 401,
+                message: "Invalid Username"
+            }
+
+            return next(error)
+        }
+
+        const match = await bcrypt.compare(password, user.password)
+
+        if(!match){
+            const error = {
+                status: 401,
+                message: "Invalid Password"
+            }
+            return next(error)
+        }
+    }
+    catch(error){
+        return next(error)
+    }
+
+    return res.status(200).json({user:user})
+    
+
 
   }
 };
