@@ -9,6 +9,7 @@ const errorHandler = (error, req, res, next)=>{
     }
 
 
+    
     if(error instanceof ValidationError){
         status =  401;
         data.message = error.message;
@@ -32,4 +33,19 @@ const errorHandler = (error, req, res, next)=>{
 
 }
 module.exports = errorHandler;
+
+
+
+
+
+
+// transfarmer
+
+
+
+// wire damage 300
+
+// meter defaulter  350
+
+// bijli choori    450
 

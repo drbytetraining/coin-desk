@@ -2,6 +2,8 @@ const Joi = require("joi");
 const passPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
+const userDto = require('../dto/user');
+const UserDto = require("../dto/user");
 
 
 
@@ -17,6 +19,8 @@ const authController = {
       confirmPassword: Joi.ref("password"),
     });
 
+
+    // error from joi = validation error
     const { error } = userRegisterSchema.validate(req.body);
 
     if(error){
@@ -74,9 +78,14 @@ const user = await userToRegister.save();
 //===========//
 // response
 
-return res.status(201).json({ user })
+const userDto = new UserDto(user)
+
+return res.status(201).json({ user: userDto })
 
   },
+
+
+
 
   async login(req, res, next){
     // user data - check/ validate
@@ -127,7 +136,11 @@ return res.status(201).json({ user })
         return next(error)
     }
 
-    return res.status(200).json({user:user})
+    // filter the neccessary credentials
+    const userDto = new UserDto(user)
+
+
+    return res.status(200).json({user:userDto})
     
 
 
@@ -135,3 +148,4 @@ return res.status(201).json({ user })
 };
 
 module.exports = authController
+
