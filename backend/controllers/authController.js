@@ -2,9 +2,7 @@ const Joi = require("joi");
 const passPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
-const userDto = require('../dto/user');
 const UserDto = require("../dto/user");
-
 
 
 const authController = {
@@ -22,6 +20,8 @@ const authController = {
 
     // error from joi = validation error
     const { error } = userRegisterSchema.validate(req.body);
+
+    // const error = userRegisterSchema.validate(req.body).error
 
     if(error){
         return next(error)
