@@ -3,6 +3,8 @@ const passPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const UserDto = require("../dto/user");
+const JWTService = require('../services/JWTService');
+
 
 
 const authController = {
@@ -65,22 +67,59 @@ const hashedPassword = await bcrypt.hash(password, 10);
 // store data in db
 
 
+let user;
+let accessToken;
+let refreshToken;
 
-const userToRegister = new User({
-    username,
-    email,
-    name,
-    password: hashedPassword
-})
+try{
+    const userToRegister = new User({
+        username,
+        email,
+        name,
+        password: hashedPassword
+    })
+    
+ user = await userToRegister.save();
 
-const user = await userToRegister.save();
+ //generate access token;
+
+ accessToken = JWTService.signAccessToken({_id: user._id}, '30m');
+
+ //generate refresh token
+ refreshToken = JWTService.signRefreshToken({_id: user._id}, '60m')
+
+
+
+}
+catch(error){
+    console.log(error)
+}
+
+// store refresh token
+
+ JWTService.storeRefreshToken(refreshToken, user._id);
+
+
+
+ /// send acces token using cookie
+
+ res.cookie('accessToken', accessToken, {
+    maxAge : 1000 * 60 * 60 * 24 ,
+    httpOnly: true
+ })
+
+ res.cookie('refreshToken', refreshToken, {
+    maxAge: 1000 * 60 * 60 * 24,
+    httpOnly: true
+ })
+
 
 //===========//
 // response
 
 const userDto = new UserDto(user)
 
-return res.status(201).json({ user: userDto })
+return res.status(201).json({ user})
 
   },
 

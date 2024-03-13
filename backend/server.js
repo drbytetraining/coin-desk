@@ -4,15 +4,18 @@ const {PORT} = require('./config/index')
 const dbConnect = require('./db/index')
 const errorHandler = require('./middleware/errorHandler')
 const router = require('./routes/index')
+const cookieParser = require('cookie-parser')
 
 
 
-app.use(express.json())
+app.use(express.json());
+
+app.use(cookieParser);
 app.use(router)
 
 dbConnect();
 
-// app.get('/', (req, res)=> res.json({hello: "Greetings"}));
+
 
 
 
