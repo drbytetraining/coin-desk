@@ -4,8 +4,8 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const UserDto = require("../dto/user");
 const JWTService = require('../services/JWTService');
-
-
+const RefreshToken = require('../models/token');
+const token = require("../models/token");
 
 const authController = {
   async register(req, res, next) {
@@ -89,10 +89,9 @@ try{
  refreshToken = JWTService.signRefreshToken({_id: user._id}, '60m')
 
 
-
 }
 catch(error){
-    console.log(error)
+    return next(error)
 }
 
 // store refresh token
@@ -174,6 +173,35 @@ return res.status(201).json({ user})
     catch(error){
         return next(error)
     }
+    // =============== USER READY TO GO =================//
+
+    const accessToken = JWTService.signAccessToken({_id: user._id}, '30m');
+    const refreshToken = JWTService.signRefreshToken({_id: user._id}, '60m')
+
+    // ===== refresh token update in database
+    try{
+        await RefreshToken.updateOne(
+            {token: refreshToken},
+            {upsert: true},
+            { _id: user._id}
+        )
+    }catch(error){
+                console.log(error)
+    }
+
+   /// send acces token using cookie
+
+ res.cookie('accessToken', accessToken, {
+    maxAge : 1000 * 60 * 60 * 24 ,
+    httpOnly: true
+ })
+
+ res.cookie('refreshToken', refreshToken, {
+    maxAge: 1000 * 60 * 60 * 24,
+    httpOnly: true
+ })
+
+
 
     // filter the neccessary credentials
     const userDto = new UserDto(user)
@@ -187,4 +215,5 @@ return res.status(201).json({ user})
 };
 
 module.exports = authController
+
 
