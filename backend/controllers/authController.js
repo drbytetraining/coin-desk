@@ -118,11 +118,9 @@ catch(error){
 
 const userDto = new UserDto(user)
 
-return res.status(201).json({ user})
+return res.status(201).json({ user, auth: true})
 
   },
-
-
 
 
   async login(req, res, next){
@@ -207,9 +205,30 @@ return res.status(201).json({ user})
     const userDto = new UserDto(user)
 
 
-    return res.status(200).json({user:userDto})
+    return res.status(200).json({user:userDto, auth: true})
     
 
+
+  },
+
+
+
+  async logout(req, res, next){
+
+    console.log(req)
+    const {refreshToken} = req.cookies;
+
+    try{
+        await RefreshToken.deleteOne({token: refreshToken})
+    }
+    catch(error){
+        return next(error)
+    }
+
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+
+    res.status(200).json({user: null, auth: false})
 
   }
 };
