@@ -206,6 +206,7 @@ return res.status(201).json({ user, auth: true})
 
 
     return res.status(200).json({user:userDto, auth: true})
+
     
 
 
@@ -215,7 +216,6 @@ return res.status(201).json({ user, auth: true})
 
   async logout(req, res, next){
 
-    console.log(req)
     const {refreshToken} = req.cookies;
 
     try{
@@ -229,6 +229,84 @@ return res.status(201).json({ user, auth: true})
     res.clearCookie('refreshToken');
 
     res.status(200).json({user: null, auth: false})
+
+  },
+
+
+  async refresh(req, res, next){
+    // get refresh token from cookies
+    // verify it
+    // generate new token
+    // update in db, return response
+
+    // const {refreshToken} = req.cookies;
+    // const originalRefreshToken = refreshToken;
+
+    const originalRefreshToken = req.cookies.refreshToken;
+
+    let id;
+    try{
+        id= JWTService.verifyRefreshToken(originalRefreshToken)._id
+    }
+    catch(e){
+     const error = {
+            status: 401,
+            message: "Unauthorized"
+        };
+
+        return next(error)
+    }
+
+    // xyz
+
+    // id=1
+
+    // match in db (id in db = id from cookie, token in db =  xyz)
+
+    try{
+        const match = RefreshToken.findOne({_id:id, token:originalRefreshToken})
+
+        if(!match){
+            const error = {
+                status: 401,
+                message: "Unauthorized"
+            };
+
+            return next(error)
+            
+        }
+    }
+    catch(error){
+        return next(error)
+    }
+
+    try{
+        const accessToken = JWTService.signAccessToken({_id: user._id}, '30m');
+        const refreshToken = JWTService.signRefreshToken({_id: user._id}, '60m');
+
+        await RefreshToken.updateOne({_id: id, token: refreshToken});
+
+        res.cookie('accessToken', accessToken, {
+            maxAge : 1000 * 60 * 60 * 24 ,
+            httpOnly: true
+         });
+        
+         res.cookie('refreshToken', refreshToken, {
+            maxAge: 1000 * 60 * 60 * 24,
+            httpOnly: true
+         });
+    }
+    catch(error){
+        return next(error)
+    }
+
+    const user = await User.findOne({_id: id});
+    const userdto = new UserDto(user);
+    return res.status(200).json({user: userdto, auth: true})
+
+
+
+
 
   }
 };
