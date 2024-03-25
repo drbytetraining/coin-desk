@@ -16,6 +16,9 @@ app.use(router)
 
 dbConnect();
 
+// storage host
+app.use('/storage', express.static('storage'))
+
 app.use(errorHandler)
 
 app.listen(PORT, console.log(`Server is running on ${PORT}`))

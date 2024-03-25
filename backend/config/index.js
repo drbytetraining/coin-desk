@@ -5,11 +5,12 @@ const dotenv = require('dotenv').config();
 // const dbConnString = process.env.dbConnString;
 
 
-const {PORT, dbConnString, ACCESS_TOKEN_SECRET_KEY, REFRESH_TOKEN_SECRET_KEY} = process.env
+const {PORT, dbConnString, ACCESS_TOKEN_SECRET_KEY, REFRESH_TOKEN_SECRET_KEY, BACKEND_SERVER_PATH} = process.env
 
 module.exports = {
     PORT,
     dbConnString,
     ACCESS_TOKEN_SECRET_KEY,
-    REFRESH_TOKEN_SECRET_KEY
+    REFRESH_TOKEN_SECRET_KEY,
+    BACKEND_SERVER_PATH
 }
